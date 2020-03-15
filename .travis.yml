@@ -31,18 +31,18 @@ stages:
 script:
   - docker build -t $repo:$TAG --build-arg ARCH="$ARCH" --build-arg GOARCH="$GOARCH" --build-arg GOARM="$GOARM" ./
   - dgoss run --name cloudflared -ti $repo:$TAG
-  - echo "$DOCKER_PASSWORD" | docker login -u=visibilityspots --password-stdin
+  - echo "$DOCKER_PASSWORD" | docker login -u=$username --password-stdin
   - docker push $repo:$TAG
 
 jobs:
   include:
      - stage: push
        script:
-       - echo "$DOCKER_PASSWORD" | docker login -u=visibilityspots --password-stdin
+       - echo "$DOCKER_PASSWORD" | docker login -u=$username --password-stdin
        - docker pull $repo:arm
        - docker pull $repo:arm64
        - docker pull $repo:amd64
-       - docker manifest create --amend $repo:latest visibilityspots/cloudflared:arm $repo:arm64 $repo:amd64
+       - docker manifest create --amend $repo:latest $username/$repo:arm $repo:arm64 $repo:amd64
        - docker manifest annotate $repo:latest $repo:arm --os linux --arch arm
        - docker manifest annotate $repo:latest $repo:arm64 --os linux --arch arm64
        - docker manifest annotate $repo:latest $repo:amd64 --os linux --arch amd64
